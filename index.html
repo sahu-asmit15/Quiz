@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellQuest — Interactive Cell Biology Quiz</title>
+  <meta name="description" content="An interactive, gamified cell biology quiz covering organelles, vesicular trafficking, ER quality control, and more." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===== PARTICLE CANVAS ===== -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ===== START SCREEN ===== -->
+  <section id="start-screen" class="screen active">
+    <div class="start-content">
+      <div class="logo-icon">🧬</div>
+      <h1 class="start-title">CellQuest</h1>
+      <p class="start-subtitle">Interactive Cell Biology Quiz</p>
+
+      <div class="cell-preview">
+        <canvas id="cell-anim" width="320" height="320"></canvas>
+      </div>
+
+      <div class="feature-pills">
+        <span class="pill">🔬 5 Questions</span>
+        <span class="pill">⚡ Instant Feedback</span>
+        <span class="pill">🔥 Streak Tracking</span>
+      </div>
+
+      <button id="start-btn" class="btn-primary" onclick="startQuiz()">
+        <span>Start Quiz</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== QUIZ SCREEN ===== -->
+  <section id="quiz-screen" class="screen">
+
+    <!-- Top Stats Bar -->
+    <div class="stats-bar glass-card">
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value" id="stat-score">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Streak</span>
+        <span class="stat-value" id="stat-streak">0 🔥</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Accuracy</span>
+        <span class="stat-value" id="stat-accuracy">100%</span>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+      <span class="progress-text" id="progress-text">1 / 5</span>
+    </div>
+
+    <!-- Organelle Visualization -->
+    <div class="organelle-visual glass-card" id="organelle-visual">
+      <canvas id="organelle-canvas" width="300" height="200"></canvas>
+      <div class="organelle-label" id="organelle-label"></div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="question-card glass-card" id="question-card">
+      <div class="q-number" id="q-number">Q1</div>
+      <p class="q-text" id="q-text"></p>
+    </div>
+
+    <!-- Options -->
+    <div class="options-grid" id="options-grid"></div>
+
+    <!-- Explanation Card (hidden until answered) -->
+    <div class="explanation-card glass-card hidden" id="explanation-card">
+      <div class="explanation-header">
+        <span class="explanation-icon" id="explanation-icon">✅</span>
+        <span class="explanation-title" id="explanation-title">Correct!</span>
+      </div>
+      <p class="explanation-text" id="explanation-text"></p>
+    </div>
+
+    <!-- Next Button -->
+    <button class="btn-primary hidden" id="next-btn" onclick="nextQuestion()">
+      <span id="next-btn-text">Next Question</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </button>
+  </section>
+
+  <!-- ===== RESULTS SCREEN ===== -->
+  <section id="results-screen" class="screen">
+    <div class="results-content">
+      <div class="results-icon" id="results-icon">🏆</div>
+      <h2 class="results-title" id="results-title">Quiz Complete!</h2>
+
+      <div class="results-stats glass-card">
+        <div class="result-stat">
+          <div class="result-stat-value" id="result-score">0</div>
+          <div class="result-stat-label">Score</div>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-stat">
+          <div class="result-stat-value" id="result-correct">0/5</div>
+          <div class="result-stat-label">Correct</div>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-stat">
+          <div class="result-stat-value" id="result-accuracy">0%</div>
+          <div class="result-stat-label">Accuracy</div>
+        </div>
+        <div class="result-divider"></div>
+        <div class="result-stat">
+          <div class="result-stat-value" id="result-streak">0 🔥</div>
+          <div class="result-stat-label">Best Streak</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div class="breakdown glass-card" id="breakdown"></div>
+
+      <button class="btn-primary" onclick="restartQuiz()">
+        <span>Play Again</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
