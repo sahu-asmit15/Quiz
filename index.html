@@ -71,12 +71,6 @@
       <span class="progress-text" id="progress-text">1 / 5</span>
     </div>
 
-    <!-- Organelle Visualization -->
-    <div class="organelle-visual glass-card" id="organelle-visual">
-      <canvas id="organelle-canvas" width="300" height="200"></canvas>
-      <div class="organelle-label" id="organelle-label"></div>
-    </div>
-
     <!-- Question Card -->
     <div class="question-card glass-card" id="question-card">
       <div class="q-number" id="q-number">Q1</div>
@@ -85,6 +79,13 @@
 
     <!-- Options -->
     <div class="options-grid" id="options-grid"></div>
+
+    <!-- Organelle Visualization (revealed after answering) -->
+    <div class="organelle-visual glass-card hidden" id="organelle-visual">
+      <div class="organelle-badge">🔬 Structure Visual</div>
+      <canvas id="organelle-canvas" width="300" height="200"></canvas>
+      <div class="organelle-label" id="organelle-label"></div>
+    </div>
 
     <!-- Explanation Card (hidden until answered) -->
     <div class="explanation-card glass-card hidden" id="explanation-card">

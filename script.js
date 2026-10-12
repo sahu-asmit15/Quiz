@@ -701,9 +701,12 @@ function renderQuestion() {
   $('#q-number').textContent = `Q${q.id}`;
   $('#q-text').textContent = q.question;
 
-  // Organelle visual
-  $('#organelle-label').textContent = q.label;
-  drawOrganelle(q.organelle);
+  // Hide organelle visual until user selects an answer
+  if (window._organelleAnim) {
+    cancelAnimationFrame(window._organelleAnim);
+    window._organelleAnim = null;
+  }
+  $('#organelle-visual').classList.add('hidden');
 
   // Options
   const letters = ['A', 'B', 'C', 'D'];
@@ -774,8 +777,14 @@ function handleAnswer(selected) {
 
   updateStats();
 
-  // Delay showing explanation to let the animation play
+  // Delay showing explanation and organelle visual to let the answer animation play
   setTimeout(() => {
+    // Reveal and animate organelle visualization
+    const visual = $('#organelle-visual');
+    visual.classList.remove('hidden');
+    $('#organelle-label').textContent = q.label;
+    drawOrganelle(q.organelle);
+
     // Show explanation
     const expCard = $('#explanation-card');
     expCard.classList.remove('hidden');
@@ -790,8 +799,8 @@ function handleAnswer(selected) {
     nextBtn.classList.remove('hidden');
     $('#next-btn-text').textContent = currentQuestion < quizData.length - 1 ? 'Next Question' : 'View Results';
 
-    // Smooth scroll to explanation
-    expCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Smooth scroll to visual
+    visual.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, 600);
 }
 
@@ -817,6 +826,10 @@ function updateStats() {
 // RESULTS
 // ========================
 function showResults() {
+  if (window._organelleAnim) {
+    cancelAnimationFrame(window._organelleAnim);
+    window._organelleAnim = null;
+  }
   showScreen('results-screen');
 
   const acc = answered > 0 ? Math.round((correctCount / answered) * 100) : 0;
