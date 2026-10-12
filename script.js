@@ -742,41 +742,57 @@ function handleAnswer(selected) {
   // Highlight correct
   buttons[q.correct].classList.add('correct');
 
+  let pointsEarned = 0;
+
   if (isCorrect) {
     streak++;
     if (streak > bestStreak) bestStreak = streak;
     correctCount++;
-    score += 100 + streak * 20;
+    pointsEarned = 100 + streak * 20;
+    score += pointsEarned;
 
     // Score pop animation
     const scoreEl = $('#stat-score');
     scoreEl.classList.add('score-pop');
     setTimeout(() => scoreEl.classList.remove('score-pop'), 400);
+
+    // 🎉 CONFETTI BURST ANIMATION
+    launchConfetti();
+    showFeedbackIndicator(true, pointsEarned);
+    showScreenFlash(true);
   } else {
     buttons[selected].classList.add('wrong');
     streak = 0;
+
+    // 💥 SHOCKWAVE ANIMATION
+    launchShockwave();
+    showFeedbackIndicator(false, 0);
+    showScreenFlash(false);
   }
 
   userAnswers.push({ questionIndex: currentQuestion, selected, isCorrect });
 
   updateStats();
 
-  // Show explanation
-  const expCard = $('#explanation-card');
-  expCard.classList.remove('hidden');
-  $('#explanation-icon').textContent = isCorrect ? '✅' : '❌';
-  const titleEl = $('#explanation-title');
-  titleEl.textContent = isCorrect ? 'Correct!' : 'Incorrect';
-  titleEl.className = `explanation-title ${isCorrect ? 'correct-title' : 'wrong-title'}`;
-  $('#explanation-text').textContent = q.explanation;
+  // Delay showing explanation to let the animation play
+  setTimeout(() => {
+    // Show explanation
+    const expCard = $('#explanation-card');
+    expCard.classList.remove('hidden');
+    $('#explanation-icon').textContent = isCorrect ? '✅' : '❌';
+    const titleEl = $('#explanation-title');
+    titleEl.textContent = isCorrect ? 'Correct!' : 'Incorrect';
+    titleEl.className = `explanation-title ${isCorrect ? 'correct-title' : 'wrong-title'}`;
+    $('#explanation-text').textContent = q.explanation;
 
-  // Show next button
-  const nextBtn = $('#next-btn');
-  nextBtn.classList.remove('hidden');
-  $('#next-btn-text').textContent = currentQuestion < quizData.length - 1 ? 'Next Question' : 'View Results';
+    // Show next button
+    const nextBtn = $('#next-btn');
+    nextBtn.classList.remove('hidden');
+    $('#next-btn-text').textContent = currentQuestion < quizData.length - 1 ? 'Next Question' : 'View Results';
 
-  // Smooth scroll to explanation
-  expCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Smooth scroll to explanation
+    expCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 600);
 }
 
 function nextQuestion() {
@@ -847,6 +863,176 @@ function showResults() {
 
 function restartQuiz() {
   startQuiz();
+}
+
+// ========================
+// CONFETTI PARTICLE SYSTEM
+// ========================
+function launchConfetti() {
+  const overlay = $('#feedback-overlay');
+  const canvas = $('#feedback-canvas');
+  overlay.classList.remove('hidden');
+
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+
+  const particles = [];
+  const PARTICLE_COUNT = 80;
+  const colors = [
+    '#34d399', '#22d3ee', '#38bdf8', '#a78bfa',
+    '#fbbf24', '#fb923c', '#f472b6', '#818cf8'
+  ];
+  const shapes = ['circle', 'rect', 'star'];
+
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 4 + Math.random() * 8;
+    particles.push({
+      x: canvas.width / 2 + (Math.random() - 0.5) * 100,
+      y: canvas.height / 2 + (Math.random() - 0.5) * 60,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 3,
+      size: 4 + Math.random() * 8,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      shape: shapes[Math.floor(Math.random() * shapes.length)],
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.2,
+      gravity: 0.12 + Math.random() * 0.08,
+      friction: 0.98,
+      opacity: 1,
+      fadeRate: 0.008 + Math.random() * 0.008
+    });
+  }
+
+  let animId;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = false;
+
+    particles.forEach(p => {
+      p.vy += p.gravity;
+      p.vx *= p.friction;
+      p.vy *= p.friction;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rotation += p.rotSpeed;
+      p.opacity -= p.fadeRate;
+
+      if (p.opacity <= 0) return;
+      alive = true;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      ctx.globalAlpha = p.opacity;
+      ctx.fillStyle = p.color;
+
+      if (p.shape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.shape === 'rect') {
+        ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
+      } else {
+        drawStar(ctx, 0, 0, 5, p.size / 2, p.size / 4);
+      }
+
+      ctx.restore();
+    });
+
+    if (alive) {
+      animId = requestAnimationFrame(animate);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      overlay.classList.add('hidden');
+    }
+  }
+
+  animate();
+
+  // Auto-cleanup after 2s
+  setTimeout(() => {
+    cancelAnimationFrame(animId);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    overlay.classList.add('hidden');
+  }, 2000);
+}
+
+function drawStar(ctx, cx, cy, spikes, outerR, innerR) {
+  let rot = Math.PI / 2 * 3;
+  const step = Math.PI / spikes;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerR);
+  for (let i = 0; i < spikes; i++) {
+    ctx.lineTo(cx + Math.cos(rot) * outerR, cy + Math.sin(rot) * outerR);
+    rot += step;
+    ctx.lineTo(cx + Math.cos(rot) * innerR, cy + Math.sin(rot) * innerR);
+    rot += step;
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ========================
+// SHOCKWAVE ANIMATION
+// ========================
+function launchShockwave() {
+  // Create 2 expanding rings
+  for (let i = 0; i < 2; i++) {
+    setTimeout(() => {
+      const ring = document.createElement('div');
+      ring.className = 'shockwave';
+      document.body.appendChild(ring);
+      ring.addEventListener('animationend', () => ring.remove());
+    }, i * 150);
+  }
+}
+
+// ========================
+// FEEDBACK INDICATOR
+// ========================
+function showFeedbackIndicator(isCorrect, points) {
+  const indicator = $('#feedback-indicator');
+  const emoji = $('#feedback-emoji');
+  const label = $('#feedback-label');
+  const pointsEl = $('#feedback-points');
+
+  // Clear previous
+  indicator.className = 'feedback-indicator';
+  void indicator.offsetHeight; // force reflow
+
+  if (isCorrect) {
+    const emojis = ['🎉', '✨', '🌟', '💪', '🔥'];
+    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    label.textContent = 'Correct!';
+    label.className = 'feedback-label correct-label';
+    pointsEl.textContent = `+${points} pts`;
+    pointsEl.style.display = 'block';
+    indicator.classList.add('show-correct');
+  } else {
+    const emojis = ['😬', '💔', '❌', '😤'];
+    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    label.textContent = 'Wrong!';
+    label.className = 'feedback-label wrong-label';
+    pointsEl.style.display = 'none';
+    indicator.classList.add('show-wrong');
+  }
+
+  // Auto-remove class after animation
+  setTimeout(() => {
+    indicator.className = 'feedback-indicator';
+  }, isCorrect ? 1100 : 900);
+}
+
+// ========================
+// SCREEN FLASH
+// ========================
+function showScreenFlash(isCorrect) {
+  const flash = document.createElement('div');
+  flash.className = isCorrect ? 'correct-flash' : 'wrong-flash';
+  document.body.appendChild(flash);
+  flash.addEventListener('animationend', () => flash.remove());
 }
 
 // ========================
